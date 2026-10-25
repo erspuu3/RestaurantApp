@@ -1,10 +1,12 @@
 namespace RestaurantApp.Models;
 
-
 public class Dish
 {
-    public decimal _price;
-    
+    // REVIEW: было `public decimal _price;`. Поле — «внутренность» класса, поэтому private.
+    //         Снаружи цену читают через свойство Price. А то, что у Price закрытый set —
+    //         отличная идея: цену блюда уже не поменять случайно из другого места программы.
+    private decimal _price;
+
     public string Name { get; }
     public string Category { get; }
 
@@ -13,23 +15,37 @@ public class Dish
         get => _price;
         private set
         {
-            if (value > 0)
+            // REVIEW: было `value > 0`. Из-за этого цена 0 не записывалась (бесплатная вода работала
+            //         «случайно», только потому что 0 — значение по умолчанию). Правило звучит как
+            //         «не отрицательная», значит условие `>= 0`.
+            if (value >= 0)
             {
                 _price = value;
             }
         }
     }
-    public int CookingTime { get; }
-    public bool IsVegeterian { get; }
 
-    public Dish(string name, string category, decimal price, int cookingTime, bool isVegeterian)
+    // REVIEW: было CookingTime. Единицы измерения в имени — маленькая привычка, которая экономит часы:
+    //         сразу видно, что это минуты, а не секунды.
+    public int CookingTimeMinutes { get; }
+
+    // REVIEW: опечатка. Было IsVegeterian -> стало IsVegetarian.
+    public bool IsVegetarian { get; }
+
+    public Dish(string name, string category, decimal price, int cookingTimeMinutes, bool isVegetarian)
     {
         Name = name;
         Category = category;
         Price = price;
-        CookingTime = cookingTime;
-        IsVegeterian = isVegeterian;
+        CookingTimeMinutes = cookingTimeMinutes;
+        IsVegetarian = isVegetarian;
+    }
+
+    // REVIEW: новое. Благодаря ToString блюдо можно печатать целиком: Console.WriteLine(dish).
+    //         Мы используем это при печати меню — не нужно собирать строку руками в каждом месте.
+    public override string ToString()
+    {
+        string vegetarianMark = IsVegetarian ? " [V]" : "";
+        return $"{Name} ({Category}) — {Price}₴, {CookingTimeMinutes} min{vegetarianMark}";
     }
 }
-
-
